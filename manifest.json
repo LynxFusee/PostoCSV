@@ -27,8 +27,7 @@
     "*://pbs.twimg.com/*",
     "*://video.twimg.com/*",
     "*://*.facebook.com/*",
-    "*://*.fbcdn.net/*",
-    "*://twitter.com/*"
+    "*://*.fbcdn.net/*"
   ],
   "optional_host_permissions": [
     "*://*/*"
