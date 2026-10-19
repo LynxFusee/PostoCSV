@@ -5,10 +5,11 @@ function toNumber(value) {
 }
 
 // Numbers are Unix timestamps in seconds (Facebook); strings are date texts (X, Mastodon).
+// Output stops at the minute, e.g. "2026-10-19T09:54Z".
 function toIso(value) {
   if (value === undefined || value === null) return null;
   const date = typeof value === "number" ? new Date(value * 1000) : new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+  return Number.isNaN(date.getTime()) ? null : date.toISOString().slice(0, 16) + "Z";
 }
 
 // Breadth-first, so the match closest to the root wins: nested quoted/shared posts carry the same
