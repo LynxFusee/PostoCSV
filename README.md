@@ -81,6 +81,8 @@ PostoCSV requires Firefox 140 or later. The extension is signed by Mozilla, so i
 
 A hash is `ERROR` when its file could not be downloaded.
 
+`postId` and `accountId` are written as `="2108124502437830860"`. Without this, Excel rounds numbers longer than 15 digits (`2.10812E+18`). Excel shows the ID exactly as captured. Other tools read the raw text, so strip the leading `="` and trailing `"` when processing the CSV in code.
+
 ## Privacy
 
 Everything stays in your browser. Cached posts are kept in session storage and cleared when Firefox closes. Captures and settings are kept in local extension storage until you clear them. The extension sends nothing anywhere. The only requests it makes itself are media downloads for hashing and, for Mastodon, the public API lookup of the open post.
@@ -99,7 +101,6 @@ Everything stays in your browser. Cached posts are kept in session storage and c
 ## Limitations
 
 - Platforms change their internal APIs without notice. A capture that fails with "Data not found" may mean a parser needs updating.
-- Long numeric IDs lose precision when a CSV is opened directly in Excel. Import the file and set the ID columns to Text instead.
 - Hashing large videos can take a while.
 
 ## Development
