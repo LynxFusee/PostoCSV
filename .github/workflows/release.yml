@@ -1,0 +1,50 @@
+name: Release
+
+# Every push to main (e.g. merging dev) signs the extension on addons.mozilla.org
+# and publishes the signed .xpi as a GitHub release named after the manifest version.
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency: release
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read version
+        id: version
+        run: echo "version=$(jq -r .version manifest.json)" >> "$GITHUB_OUTPUT"
+
+      # AMO refuses to sign the same version twice, so stop early with a clear message.
+      - name: Check the version is new
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "v${{ steps.version.outputs.version }}" > /dev/null 2>&1; then
+            echo "::error::Release v${{ steps.version.outputs.version }} already exists. Bump \"version\" in manifest.json."
+            exit 1
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Sign on addons.mozilla.org
+        env:
+          WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_API_KEY }}
+          WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
+        run: npx --yes web-ext@8.3.0 sign --channel=unlisted --ignore-files "README.md"
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="${{ steps.version.outputs.version }}"
+          cp web-ext-artifacts/*.xpi "postocsv-$version.xpi"
+          gh release create "v$version" "postocsv-$version.xpi" --title "PostoCSV $version" --generate-notes
