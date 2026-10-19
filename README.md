@@ -70,8 +70,8 @@ PostoCSV requires Firefox 140 or later. The extension is signed by Mozilla, so i
 | `accountId` | The platform's account ID |
 | `url` | Link to the post |
 | `content` | Post text |
-| `publishedAt` | Publication date (ISO 8601, UTC, to the minute) |
-| `capturedAt` | Capture date (ISO 8601, UTC, to the minute) |
+| `publishedAt` | Publication date, UTC, to the minute (`2026-10-19 09:54`) |
+| `capturedAt` | Capture date, UTC, to the minute (`2026-10-19 09:54`) |
 | `views` | View count (X, Facebook videos) |
 | `likes` | Likes / reactions / favourites |
 | `replies` | Reply / comment count |
