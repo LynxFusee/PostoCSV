@@ -1,0 +1,153 @@
+const CACHE_PREFIX = "post_";
+const CACHE_LIMIT = 300;
+const PLATFORMS = [MastodonPlatform, XPlatform, FacebookPlatform];
+
+function cacheKey(record) {
+  return `${CACHE_PREFIX}${record.platform}_${record.postId}`;
+}
+
+function mergeRecords(oldRecord, newRecord) {
+  if (!oldRecord) return newRecord;
+  const merged = { ...oldRecord };
+  for (const [key, value] of Object.entries(newRecord)) {
+    if (value === null || value === undefined) continue;
+    if (Array.isArray(value) && value.length === 0) continue;
+    merged[key] = value;
+  }
+  merged.tokens = [...new Set([...(oldRecord.tokens ?? []), ...(newRecord.tokens ?? [])])];
+  return merged;
+}
+
+async function pruneCache() {
+  const items = await browser.storage.session.get(null);
+  const entries = Object.entries(items)
+    .filter(([key]) => key.startsWith(CACHE_PREFIX))
+    .sort((a, b) => b[1].cachedAt - a[1].cachedAt);
+  if (entries.length > CACHE_LIMIT) {
+    await browser.storage.session.remove(entries.slice(CACHE_LIMIT).map(([key]) => key));
+  }
+}
+
+async function storeRecords(records) {
+  if (records.length === 0) return;
+  const batch = new Map();
+  for (const record of records) {
+    const key = cacheKey(record);
+    batch.set(key, mergeRecords(batch.get(key), record));
+  }
+  const existing = await browser.storage.session.get([...batch.keys()]);
+  const now = Date.now();
+  const toStore = {};
+  for (const [key, record] of batch) {
+    toStore[key] = { ...mergeRecords(existing[key], record), cachedAt: now };
+  }
+  await browser.storage.session.set(toStore);
+  await pruneCache();
+}
+
+async function findRecord(platform, tokens) {
+  const items = await browser.storage.session.get(null);
+  const prefix = `${CACHE_PREFIX}${platform.name}_`;
+  let best = null;
+  for (const [key, record] of Object.entries(items)) {
+    if (!key.startsWith(prefix)) continue;
+    if (!record.tokens?.some((t) => tokens.includes(t))) continue;
+    if (!best || record.cachedAt > best.cachedAt) best = record;
+  }
+  return best;
+}
+
+async function hashUrl(url) {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    const buffer = await response.arrayBuffer();
+    const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
+    return Array.from(new Uint8Array(hashBuffer), (b) => b.toString(16).padStart(2, "0")).join("");
+  } catch (e) {
+    return null;
+  }
+}
+
+async function hashAll(urls) {
+  const hashes = await Promise.all((urls ?? []).map(hashUrl));
+  return hashes.map((h) => h ?? "ERROR").join(";");
+}
+
+async function capturePost(pageUrl) {
+  await Promise.all(PLATFORMS.map((p) => p.ready));
+  const platform = PLATFORMS.find((p) => p.matches(pageUrl));
+  if (!platform) return { ok: false, error: "Unsupported platform." };
+
+  const tokens = platform.pageTokens(pageUrl);
+  if (tokens.length === 0) return { ok: false, error: "Please open a specific post first." };
+
+  let record = await findRecord(platform, tokens);
+  if (!record && platform.fetchRecord) record = await platform.fetchRecord(pageUrl, tokens);
+  if (!record) return { ok: false, error: "Data not found. Please refresh the page (F5)." };
+
+  const [imageHashes, videoHashes] = await Promise.all([hashAll(record.imageUrls), hashAll(record.videoUrls)]);
+  const { imageUrls, videoUrls, tokens: recordTokens, cachedAt, ...fields } = record;
+  const postData = {
+    ...fields,
+    url: fields.url ?? pageUrl,
+    capturedAt: new Date().toISOString(),
+    imageHashes,
+    videoHashes
+  };
+
+  const { savedPosts = [] } = await browser.storage.local.get("savedPosts");
+  savedPosts.push(postData);
+  await browser.storage.local.set({ savedPosts });
+  return { ok: true, platform: platform.name };
+}
+
+function csvCell(value, delimiter) {
+  const text = value === undefined || value === null ? "" : String(value);
+  const needsQuotes = text.includes(delimiter) || /["\r\n]/.test(text);
+  return needsQuotes ? `"${text.replace(/"/g, '""')}"` : text;
+}
+
+async function downloadText(text, filename, type) {
+  const blob = new Blob([text], { type });
+  const url = URL.createObjectURL(blob);
+  try {
+    await browser.downloads.download({ url, filename, saveAs: true });
+  } finally {
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  }
+}
+
+async function exportCsv() {
+  const { savedPosts = [] } = await browser.storage.local.get("savedPosts");
+  if (savedPosts.length === 0) return { ok: false, error: "No data to export." };
+
+  const { columns, delimiter } = (await loadConfig()).csv;
+  const lines = [columns.map((c) => csvCell(c.header, delimiter)).join(delimiter)];
+  for (const post of savedPosts) {
+    lines.push(columns.map((c) => csvCell(post[c.field], delimiter)).join(delimiter));
+  }
+
+  await downloadText(
+    "﻿" + lines.join("\r\n") + "\r\n",
+    `social_posts_export_${Date.now()}.csv`,
+    "text/csv;charset=utf-8"
+  );
+  return { ok: true };
+}
+
+for (const platform of PLATFORMS) {
+  platform.register((records) => storeRecords(records).catch(console.error));
+}
+
+browser.storage.onChanged.addListener((changes, area) => {
+  if (area !== "local" || !("config" in changes)) return;
+  MastodonPlatform.ready = loadConfig()
+    .then((config) => MastodonPlatform.setHosts(config.mastodonHosts))
+    .catch(console.error);
+});
+
+browser.runtime.onMessage.addListener((message) => {
+  if (message.action === "capture") return capturePost(message.url);
+  if (message.action === "exportCsv") return exportCsv();
+});

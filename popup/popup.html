@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body { width: 300px; padding: 15px; font-family: sans-serif; }
+        button { width: 100%; padding: 10px; margin-top: 10px; cursor: pointer; border: none; border-radius: 4px; color: white; font-weight: bold; }
+        #captureBtn { background-color: #1da1f2; }
+        #exportBtn { background-color: #28a745; }
+        #clearBtn { background-color: #dc3545; }
+        #settingsBtn { background-color: #6c757d; }
+        #status { margin-top: 10px; font-size: 12px; min-height: 20px; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h3>Post Catcher</h3>
+    <div id="count">Saved captures: 0</div>
+    <button id="captureBtn">Capture Current Post</button>
+    <div id="status"></div>
+    <hr>
+    <button id="exportBtn">Export All to CSV</button>
+    <button id="clearBtn">Clear Saved Posts</button>
+    <button id="settingsBtn">Settings</button>
+    <script src="popup.js"></script>
+</body>
+</html>

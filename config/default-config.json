@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "mastodonHosts": [],
+  "csv": {
+    "delimiter": ",",
+    "columns": [
+      { "header": "Platform", "field": "platform" },
+      { "header": "Account", "field": "account" },
+      { "header": "Account ID", "field": "accountId" },
+      { "header": "Published At", "field": "publishedAt" },
+      { "header": "Content", "field": "content" },
+      { "header": "Captured At", "field": "capturedAt" },
+      { "header": "Views", "field": "views" },
+      { "header": "Likes", "field": "likes" },
+      { "header": "Replies", "field": "replies" },
+      { "header": "Reposts", "field": "reposts" },
+      { "header": "Image Hashes", "field": "imageHashes" },
+      { "header": "URL", "field": "url" },
+      { "header": "Video Hashes", "field": "videoHashes" }
+    ]
+  }
+}

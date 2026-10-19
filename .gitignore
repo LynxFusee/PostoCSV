@@ -1,0 +1,6 @@
+# Local only: secrets and build outputs
+Claude outputs/
+.amo-upload-uuid
+dist/
+web-ext-artifacts/
+*.xpi
