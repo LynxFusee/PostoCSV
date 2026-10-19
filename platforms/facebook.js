@@ -5,6 +5,8 @@ const FacebookPlatform = {
     return /^https?:\/\/(?:[a-z0-9-]+\.)?facebook\.com\//i.test(url);
   },
 
+  // Facebook has many URL shapes for one post (?story_fbid=, /posts/pfbid..., /photo?fbid=, /videos/123...):
+  // collect every ID-looking part. pfbid... is Facebook's obfuscated post ID.
   pageTokens(url) {
     let parsed;
     try {
@@ -44,6 +46,7 @@ const FacebookPlatform = {
     );
   },
 
+  // Field locations change between Facebook layouts, so each value is searched for anywhere in the story.
   toRecord(story) {
     const actor = bfsFind(story, (n) => Array.isArray(n.actors) && n.actors.length > 0)?.actors[0] ?? {};
     const message = bfsFind(story, (n) => typeof n.message?.text === "string")?.message.text ?? null;
@@ -76,6 +79,7 @@ const FacebookPlatform = {
       }
     });
 
+    // Media IDs are tokens too: opening a photo or video gives a URL with its ID, not the post's.
     const tokens = new Set([story.post_id]);
     if (url) for (const token of FacebookPlatform.pageTokens(url)) tokens.add(token);
     for (const id of [...photos.keys(), ...videos.keys()]) {
@@ -120,6 +124,8 @@ const FacebookPlatform = {
       (text) => FacebookPlatform.handleJson(parseJsonChunks(text), storeRecords)
     );
 
+    // The first page load embeds its data as JSON in <script> tags instead of fetching it.
+    // Only scripts mentioning post_id are parsed: the page holds many large unrelated ones.
     onResponseBody(
       ["*://*.facebook.com/*"],
       ["main_frame"],

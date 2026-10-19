@@ -4,12 +4,15 @@ function toNumber(value) {
   return Number.isNaN(n) ? null : n;
 }
 
+// Numbers are Unix timestamps in seconds (Facebook); strings are date texts (X, Mastodon).
 function toIso(value) {
   if (value === undefined || value === null) return null;
   const date = typeof value === "number" ? new Date(value * 1000) : new Date(value);
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
 
+// Breadth-first, so the match closest to the root wins: nested quoted/shared posts carry the same
+// field names deeper down. maxNodes caps the work on huge responses.
 function bfsFind(root, predicate, maxNodes = 50000) {
   const queue = [root];
   let visited = 0;
@@ -25,12 +28,15 @@ function bfsFind(root, predicate, maxNodes = 50000) {
   return null;
 }
 
+// Depth-first visit of every object; returning false from visit skips that node's children.
 function walk(node, visit) {
   if (!node || typeof node !== "object") return;
   if (!Array.isArray(node) && visit(node) === false) return;
   for (const value of Object.values(node)) walk(value, visit);
 }
 
+// A response is either one JSON document or several, one per line (Facebook streams them that way).
+// "for (;;);" is Facebook's anti-JSON-hijacking prefix.
 function parseJsonChunks(text) {
   const cleaned = text.replace(/^for \(;;\);/, "");
   const results = [];
@@ -50,6 +56,8 @@ function parseJsonChunks(text) {
   return results;
 }
 
+// Reads a response body as it reaches the page. Every chunk is passed through unchanged,
+// so the site keeps working normally; the copy is parsed once the response ends.
 function captureBody(details, onText) {
   const filter = browser.webRequest.filterResponseData(details.requestId);
   const decoder = new TextDecoder("utf-8");
@@ -75,6 +83,8 @@ function captureBody(details, onText) {
   filter.onerror = () => console.error("PostoCSV: filter error", filter.error);
 }
 
+// test may be async (Mastodon waits for its config): a blocking listener can return a Promise,
+// and the request waits until we know whether to capture it. {} means: leave the request as is.
 function onResponseBody(urls, types, test, onText) {
   browser.webRequest.onBeforeRequest.addListener(
     (details) => {

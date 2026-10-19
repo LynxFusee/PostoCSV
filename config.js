@@ -28,6 +28,7 @@ async function loadConfig() {
   return config ?? loadDefaultConfig();
 }
 
+// Checks a user-supplied config and returns a normalized copy; throws a readable error otherwise.
 function validateConfig(raw) {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
     throw new Error("The config must be a JSON object.");
@@ -68,6 +69,7 @@ function validateConfig(raw) {
   };
 }
 
+// Match patterns for permissions.request / permissions.contains.
 function hostOrigins(hosts) {
   return hosts.map((host) => `*://${host}/*`);
 }

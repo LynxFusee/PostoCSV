@@ -1,3 +1,5 @@
+// Any domain can run a Mastodon instance, so hosts come from the config (mastodonHosts),
+// and each one needs a host permission granted from the settings page.
 const MastodonPlatform = {
   name: "Mastodon",
   hosts: [],
@@ -26,6 +28,7 @@ const MastodonPlatform = {
     return match ? [match[1]] : [];
   },
 
+  // Recognizes a Mastodon API status object by its shape.
   isStatus(node) {
     return (
       typeof node.id === "string" &&
@@ -37,6 +40,7 @@ const MastodonPlatform = {
     );
   },
 
+  // Status content is HTML: keep line and paragraph breaks, drop the tags.
   htmlToText(html) {
     const prepared = html.replace(/<br\s*\/?>/gi, "\n").replace(/<\/p>\s*<p[^>]*>/gi, "\n\n");
     const doc = new DOMParser().parseFromString(prepared, "text/html");
@@ -69,6 +73,8 @@ const MastodonPlatform = {
     });
   },
 
+  // Fallback when the post was not seen in network traffic (e.g. a server-rendered page):
+  // the public API returns it directly.
   async fetchRecord(pageUrl, tokens) {
     try {
       const origin = new URL(pageUrl).origin;
@@ -86,6 +92,7 @@ const MastodonPlatform = {
       .then((config) => MastodonPlatform.setHosts(config.mastodonHosts))
       .catch(console.error);
 
+    // Hosts can change at runtime, so listen everywhere and filter by host in the test.
     onResponseBody(
       ["<all_urls>"],
       ["xmlhttprequest"],

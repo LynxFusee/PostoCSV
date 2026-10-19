@@ -70,6 +70,8 @@ async function onReset() {
   showStatus("Default config restored.");
 }
 
+// Not async and not wrapped in guard(): permissions.request must be called directly
+// in the click handler, or Firefox refuses it as not coming from a user action.
 function onGrant() {
   browser.permissions
     .request({ origins: missingOrigins })

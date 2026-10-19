@@ -12,10 +12,12 @@ const XPlatform = {
 
   collectTweets(node, out) {
     walk(node, (n) => {
+      // Restricted tweets come wrapped in this object; the real tweet is in .tweet.
       if (n.__typename === "TweetWithVisibilityResults" && n.tweet) {
         XPlatform.collectTweets(n.tweet, out);
         return false;
       }
+      // X's GraphQL has no stable type name for tweets; these three fields together identify one.
       if (n.rest_id && n.legacy && n.core) out.push(n);
     });
   },
@@ -41,12 +43,14 @@ const XPlatform = {
       url: screenName
         ? `https://x.com/${screenName}/status/${tweet.rest_id}`
         : `https://x.com/i/status/${tweet.rest_id}`,
+      // Posts longer than 280 characters keep their full text in note_tweet; full_text is truncated.
       content: tweet.note_tweet?.note_tweet_results?.result?.text ?? legacy.full_text ?? null,
       publishedAt: toIso(legacy.created_at),
       views: toNumber(tweet.views?.count),
       likes: toNumber(legacy.favorite_count),
       reposts: toNumber(legacy.retweet_count),
       replies: toNumber(legacy.reply_count),
+      // ?name=orig asks for the original resolution instead of the resized preview.
       imageUrls: media.filter((m) => m.type === "photo").map((m) => `${m.media_url_https}?name=orig`),
       videoUrls: media
         .filter((m) => m.type === "video" || m.type === "animated_gif")
@@ -57,6 +61,7 @@ const XPlatform = {
   },
 
   register(storeRecords) {
+    // Only the endpoints that return a single post's details; timelines are ignored.
     onResponseBody(
       ["*://*.x.com/i/api/graphql/*"],
       ["xmlhttprequest"],

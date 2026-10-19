@@ -1,3 +1,5 @@
+// Every post seen in network responses is cached in storage.session (cleared when the browser closes),
+// so clicking "Capture" never needs a new request. Only captured posts go to storage.local.
 const CACHE_PREFIX = "post_";
 const CACHE_LIMIT = 300;
 const PLATFORMS = [MastodonPlatform, XPlatform, FacebookPlatform];
@@ -6,6 +8,8 @@ function cacheKey(record) {
   return `${CACHE_PREFIX}${record.platform}_${record.postId}`;
 }
 
+// The same post shows up in several responses, each with partial data (a timeline may lack views):
+// keep every known value and never overwrite it with an empty one.
 function mergeRecords(oldRecord, newRecord) {
   if (!oldRecord) return newRecord;
   const merged = { ...oldRecord };
@@ -45,6 +49,8 @@ async function storeRecords(records) {
   await pruneCache();
 }
 
+// Tokens are the IDs a post can be reached by in a page URL (post ID, photo ID, pfbid...).
+// The newest cached record sharing a token with the current page is the post on screen.
 async function findRecord(platform, tokens) {
   const items = await browser.storage.session.get(null);
   const prefix = `${CACHE_PREFIX}${platform.name}_`;
@@ -69,12 +75,15 @@ async function hashUrl(url) {
   }
 }
 
+// One SHA-256 per media file, ";"-separated, so the CSV can prove a file was not altered later.
+// "ERROR" keeps the position of a file that could not be downloaded.
 async function hashAll(urls) {
   const hashes = await Promise.all((urls ?? []).map(hashUrl));
   return hashes.map((h) => h ?? "ERROR").join(";");
 }
 
 async function capturePost(pageUrl) {
+  // Mastodon only knows which hosts are instances once its config has loaded.
   await Promise.all(PLATFORMS.map((p) => p.ready));
   const platform = PLATFORMS.find((p) => p.matches(pageUrl));
   if (!platform) return { ok: false, error: "Unsupported platform." };
@@ -114,6 +123,7 @@ async function downloadText(text, filename, type) {
   try {
     await browser.downloads.download({ url, filename, saveAs: true });
   } finally {
+    // The download reads the blob after this call returns, so release it a bit later.
     setTimeout(() => URL.revokeObjectURL(url), 60000);
   }
 }
@@ -128,6 +138,7 @@ async function exportCsv() {
     lines.push(columns.map((c) => csvCell(post[c.field], delimiter)).join(delimiter));
   }
 
+  // The leading BOM makes Excel open the file as UTF-8 (accents, emoji).
   await downloadText(
     "﻿" + lines.join("\r\n") + "\r\n",
     `social_posts_export_${Date.now()}.csv`,
@@ -140,6 +151,7 @@ for (const platform of PLATFORMS) {
   platform.register((records) => storeRecords(records).catch(console.error));
 }
 
+// A new config in the settings page takes effect without reloading the extension.
 browser.storage.onChanged.addListener((changes, area) => {
   if (area !== "local" || !("config" in changes)) return;
   MastodonPlatform.ready = loadConfig()
