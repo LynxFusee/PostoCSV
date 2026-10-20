@@ -3,6 +3,27 @@ async function updateCount() {
   document.getElementById("count").textContent = `Saved captures: ${savedPosts.length}`;
 }
 
+// Firefox lets the user refuse or revoke Manifest V3 host permissions; without them no response is seen
+// and every capture ends in "Data not found".
+const hostOrigins = browser.runtime.getManifest().host_permissions;
+
+async function checkAccess() {
+  const granted = await browser.permissions.contains({ origins: hostOrigins });
+  document.getElementById("accessWarning").classList.toggle("hidden", granted);
+}
+
+// Not async and not wrapped in guard(): permissions.request must be called directly
+// in the click handler, or Firefox refuses it as not coming from a user action.
+function grantAccess() {
+  browser.permissions
+    .request({ origins: hostOrigins })
+    .then(async (granted) => {
+      await checkAccess();
+      showStatus(granted ? "Access granted. Reload the post page (F5), then capture." : "Access refused.", !granted);
+    })
+    .catch((e) => showStatus(`Error: ${e.message}`, true));
+}
+
 function showStatus(message, isError = false) {
   const statusEl = document.getElementById("status");
   statusEl.textContent = message;
@@ -46,7 +67,11 @@ function guard(fn) {
   return () => fn().catch((e) => showStatus(`Error: ${e.message}`, true));
 }
 
-document.addEventListener("DOMContentLoaded", updateCount);
+document.addEventListener("DOMContentLoaded", () => {
+  updateCount();
+  checkAccess().catch((e) => showStatus(`Error: ${e.message}`, true));
+});
+document.getElementById("grantBtn").addEventListener("click", grantAccess);
 document.getElementById("captureBtn").addEventListener("click", guard(capture));
 document.getElementById("exportBtn").addEventListener("click", guard(exportCsv));
 document.getElementById("clearBtn").addEventListener("click", guard(clearPosts));

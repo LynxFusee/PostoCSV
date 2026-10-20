@@ -9,6 +9,8 @@
         #exportBtn { background-color: #28a745; }
         #clearBtn { background-color: #dc3545; }
         #settingsBtn { background-color: #6c757d; }
+        #grantBtn { background-color: #fd7e14; }
+        .hidden { display: none; }
         #status { margin-top: 10px; font-size: 12px; min-height: 20px; }
         .success { color: green; }
         .error { color: red; }
@@ -17,6 +19,10 @@
 <body>
     <h3>Post Catcher</h3>
     <div id="count">Saved captures: 0</div>
+    <div id="accessWarning" class="error hidden">
+        Firefox has not granted access to X and Facebook, so posts cannot be read.
+        <button id="grantBtn">Allow access to X and Facebook</button>
+    </div>
     <button id="captureBtn">Capture Current Post</button>
     <div id="status"></div>
     <hr>

@@ -90,6 +90,7 @@ Everything stays in your browser. Cached posts are kept in session storage and c
 
 ## Limitations
 
+- Firefox can withhold or revoke access to X and Facebook (Manifest V3 host permissions). Every capture then fails with "Data not found"; the popup shows **Allow access to X and Facebook** to grant it again.
 - Platforms change their internal APIs without notice. A capture that fails with "Data not found" may mean a parser needs updating.
 - Hashing large videos can take a while.
 
