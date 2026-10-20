@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "PostoCSV",
-  "version": "0.6",
+  "version": "1.0",
   "browser_specific_settings": {
     "gecko": {
       "id": "postocsv@local",
@@ -27,8 +27,7 @@
     "*://pbs.twimg.com/*",
     "*://video.twimg.com/*",
     "*://*.facebook.com/*",
-    "*://*.fbcdn.net/*",
-    "*://twitter.com/*"
+    "*://*.fbcdn.net/*"
   ],
   "optional_host_permissions": [
     "*://*/*"

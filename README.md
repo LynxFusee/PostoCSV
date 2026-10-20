@@ -41,26 +41,15 @@ PostoCSV requires Firefox 140 or later. The extension is signed by Mozilla, so i
 
 ## Configuration
 
-**Settings** opens a JSON editor. You can import, export, and reset the config there.
+**Settings** opens the settings page:
 
-```json
-{
-  "version": 1,
-  "mastodonHosts": ["mastodon.social"],
-  "csv": {
-    "delimiter": ",",
-    "columns": [
-      { "header": "Platform", "field": "platform" },
-      { "header": "Account", "field": "account" },
-      { "header": "Content", "field": "content" }
-    ]
-  }
-}
-```
+- **CSV columns**: one row per column, in order. Type the column title, pick the data it holds, drag it by its ⠿ handle to reorder (or focus the handle and press ↑ ↓), remove it with ✕. **Add column** adds one at the end.
+- **Delimiter**: comma, semicolon, tab or pipe.
+- **Mastodon instances**: one hostname per line. After saving, click **Grant access to Mastodon hosts** so Firefox allows the extension on them.
 
-- `mastodonHosts`: the Mastodon instances to support. After saving, click **Grant access to Mastodon hosts** so Firefox allows the extension on them.
-- `csv.delimiter`: one of `,` `;` `|` or `\t` (tab).
-- `csv.columns`: the columns, in order. `header` is the column title. `field` is one of:
+Click **Save** to apply. **Export file** and **Import file** save and load the settings as JSON, to back them up or share them. **Reset to default** restores the default columns.
+
+The data a column can hold:
 
 | Field | Content |
 |-------|---------|
@@ -70,16 +59,19 @@ PostoCSV requires Firefox 140 or later. The extension is signed by Mozilla, so i
 | `accountId` | The platform's account ID |
 | `url` | Link to the post |
 | `content` | Post text |
-| `publishedAt` | Publication date (ISO 8601, UTC) |
-| `capturedAt` | Capture date (ISO 8601, UTC) |
+| `publishedAt` | Publication date, UTC, to the minute (`2026-10-19 09:54`) |
+| `capturedAt` | Capture date, UTC, to the minute (`2026-10-19 09:54`) |
 | `views` | View count (X, Facebook videos) |
 | `likes` | Likes / reactions / favourites |
 | `replies` | Reply / comment count |
 | `reposts` | Reposts / shares / boosts |
 | `imageHashes` | SHA-256 of each image, `;`-separated |
 | `videoHashes` | SHA-256 of each video, `;`-separated |
+| `empty` | Nothing: the column stays blank, e.g. to fill in by hand later |
 
 A hash is `ERROR` when its file could not be downloaded.
+
+`postId` and `accountId` are written as plain digits. Excel rounds numbers longer than 15 digits when it opens a CSV directly (`2.10812E+18`): to keep them exact, import the file with **Data > From Text/CSV** and set those columns to **Text**.
 
 ## Privacy
 
@@ -98,8 +90,8 @@ Everything stays in your browser. Cached posts are kept in session storage and c
 
 ## Limitations
 
+- Firefox can withhold or revoke access to X and Facebook (Manifest V3 host permissions). Every capture then fails with "Data not found"; the popup shows **Allow access to X and Facebook** to grant it again.
 - Platforms change their internal APIs without notice. A capture that fails with "Data not found" may mean a parser needs updating.
-- Long numeric IDs lose precision when a CSV is opened directly in Excel. Import the file and set the ID columns to Text instead.
 - Hashing large videos can take a while.
 
 ## Development

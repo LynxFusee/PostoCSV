@@ -100,7 +100,7 @@ async function capturePost(pageUrl) {
   const postData = {
     ...fields,
     url: fields.url ?? pageUrl,
-    capturedAt: new Date().toISOString(),
+    capturedAt: toIso(new Date()),
     imageHashes,
     videoHashes
   };

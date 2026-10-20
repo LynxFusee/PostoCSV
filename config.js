@@ -12,7 +12,9 @@ const CONFIG_FIELDS = [
   "replies",
   "reposts",
   "imageHashes",
-  "videoHashes"
+  "videoHashes",
+  // No post has this field, so its column is always left blank (e.g. for notes added later).
+  "empty"
 ];
 
 const CONFIG_DELIMITERS = [",", ";", "\t", "|"];
@@ -36,7 +38,7 @@ function validateConfig(raw) {
 
   const hosts = raw.mastodonHosts ?? [];
   if (!Array.isArray(hosts) || hosts.some((h) => typeof h !== "string" || !HOSTNAME_REGEX.test(h))) {
-    throw new Error('"mastodonHosts" must be a list of hostnames, e.g. ["twitter.com", "mastodon.social"].');
+    throw new Error('"mastodonHosts" must be a list of hostnames, e.g. ["mastodon.social", "fosstodon.org"].');
   }
 
   const csv = raw.csv;
