@@ -71,7 +71,7 @@ The data a column can hold:
 
 A hash is `ERROR` when its file could not be downloaded.
 
-`postId` and `accountId` are written as `="2108124502437830860"`. Without this, Excel rounds numbers longer than 15 digits (`2.10812E+18`). Excel shows the ID exactly as captured. Other tools read the raw text, so strip the leading `="` and trailing `"` when processing the CSV in code.
+`postId` and `accountId` are written as plain digits. Excel rounds numbers longer than 15 digits when it opens a CSV directly (`2.10812E+18`): to keep them exact, import the file with **Data > From Text/CSV** and set those columns to **Text**.
 
 ## Privacy
 

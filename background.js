@@ -117,16 +117,6 @@ function csvCell(value, delimiter) {
   return needsQuotes ? `"${text.replace(/"/g, '""')}"` : text;
 }
 
-const ID_FIELDS = new Set(["postId", "accountId"]);
-
-// Excel rounds numbers past 15 digits (2108124502437830860 becomes 2.10812E+18).
-// Written as the formula ="...", an ID is shown as text, exactly as captured.
-function exportValue(post, field) {
-  const value = post[field];
-  if (!ID_FIELDS.has(field) || value === undefined || value === null || value === "") return value;
-  return `="${String(value).replace(/"/g, '""')}"`;
-}
-
 async function downloadText(text, filename, type) {
   const blob = new Blob([text], { type });
   const url = URL.createObjectURL(blob);
@@ -145,7 +135,7 @@ async function exportCsv() {
   const { columns, delimiter } = (await loadConfig()).csv;
   const lines = [columns.map((c) => csvCell(c.header, delimiter)).join(delimiter)];
   for (const post of savedPosts) {
-    lines.push(columns.map((c) => csvCell(exportValue(post, c.field), delimiter)).join(delimiter));
+    lines.push(columns.map((c) => csvCell(post[c.field], delimiter)).join(delimiter));
   }
 
   // The leading BOM makes Excel open the file as UTF-8 (accents, emoji).
