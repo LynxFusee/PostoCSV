@@ -12,7 +12,8 @@
         td.row-actions { white-space: nowrap; width: 1%; }
         td.row-actions button { padding: 4px 8px; background-color: #6c757d; }
         td.row-actions button.remove { background-color: #dc3545; }
-        button:disabled { opacity: 0.4; cursor: default; }
+        td.row-actions button.handle { cursor: grab; font-size: 16px; padding: 2px 8px; }
+        tr.drop-target td { border-top: 3px solid #1da1f2; }
         #addBtn { background-color: #1da1f2; margin-top: 8px; }
         .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
         button, label.button { padding: 8px 14px; border: none; border-radius: 4px; color: white; font-weight: bold; cursor: pointer; font-size: 14px; }
@@ -33,7 +34,7 @@
     <h2>PostoCSV Settings</h2>
     <h3>CSV columns</h3>
     <table>
-        <thead><tr><th>Column title</th><th>Data</th><th></th></tr></thead>
+        <thead><tr><th></th><th>Column title</th><th>Data</th><th></th></tr></thead>
         <tbody id="columns"></tbody>
     </table>
     <button id="addBtn">Add column</button>

@@ -5,6 +5,7 @@ const grantBtn = document.getElementById("grantBtn");
 let missingOrigins = [];
 // The columns as edited on the page; saved only when "Save" is clicked.
 let columns = [];
+let dragIndex = null;
 
 const FIELD_LABELS = {
   platform: "Platform",
@@ -26,19 +27,52 @@ const FIELD_LABELS = {
 
 const DELIMITER_LABELS = { ",": "Comma (,)", ";": "Semicolon (;)", "\t": "Tab", "|": "Pipe (|)" };
 
-function button(text, label, onClick, disabled = false) {
-  const el = document.createElement("button");
-  el.textContent = text;
-  el.setAttribute("aria-label", label);
-  el.disabled = disabled;
-  el.addEventListener("click", onClick);
-  return el;
-}
-
 function moveColumn(from, to) {
+  if (to < 0 || to >= columns.length || to === from) return;
   const [column] = columns.splice(from, 1);
   columns.splice(to, 0, column);
   renderColumns();
+}
+
+// Only the handle starts a drag: a draggable row would stop text selection in its inputs.
+// Arrow keys on the focused handle move the row too, for keyboard users.
+function dragHandle(index, row) {
+  const handle = document.createElement("button");
+  handle.textContent = "⠿";
+  handle.className = "handle";
+  handle.draggable = true;
+  handle.title = "Drag to reorder";
+  handle.setAttribute("aria-label", `Column ${index + 1}: drag, or press up / down arrow, to reorder`);
+  handle.addEventListener("dragstart", (event) => {
+    dragIndex = index;
+    // Firefox starts a drag only once some data is set.
+    event.dataTransfer.setData("text/plain", String(index));
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setDragImage(row, 0, 0);
+  });
+  handle.addEventListener("dragend", () => (dragIndex = null));
+  handle.addEventListener("keydown", (event) => {
+    const to = { ArrowUp: index - 1, ArrowDown: index + 1 }[event.key];
+    if (to === undefined) return;
+    event.preventDefault();
+    moveColumn(index, to);
+    columnsBody.children[Math.max(0, Math.min(to, columns.length - 1))].querySelector(".handle").focus();
+  });
+  return handle;
+}
+
+function makeDropTarget(row, index) {
+  row.addEventListener("dragover", (event) => {
+    if (dragIndex === null) return;
+    event.preventDefault();
+    row.classList.add("drop-target");
+  });
+  row.addEventListener("dragleave", () => row.classList.remove("drop-target"));
+  row.addEventListener("drop", (event) => {
+    event.preventDefault();
+    if (dragIndex !== null) moveColumn(dragIndex, index);
+    dragIndex = null;
+  });
 }
 
 function renderColumns() {
@@ -61,19 +95,24 @@ function renderColumns() {
       column.field = field.value;
     });
 
+    const remove = document.createElement("button");
+    remove.textContent = "✕";
+    remove.className = "remove";
+    remove.setAttribute("aria-label", `Remove column ${index + 1}`);
+    remove.addEventListener("click", () => {
+      columns.splice(index, 1);
+      renderColumns();
+    });
     const actions = document.createElement("td");
     actions.className = "row-actions";
-    actions.append(
-      button("↑", `Move column ${index + 1} up`, () => moveColumn(index, index - 1), index === 0),
-      button("↓", `Move column ${index + 1} down`, () => moveColumn(index, index + 1), index === columns.length - 1),
-      button("✕", `Remove column ${index + 1}`, () => {
-        columns.splice(index, 1);
-        renderColumns();
-      })
-    );
-    actions.lastChild.className = "remove";
+    actions.append(remove);
 
     const row = document.createElement("tr");
+    const handleCell = document.createElement("td");
+    handleCell.className = "row-actions";
+    handleCell.append(dragHandle(index, row));
+    row.append(handleCell);
+    makeDropTarget(row, index);
     for (const input of [header, field]) {
       const cell = document.createElement("td");
       cell.append(input);

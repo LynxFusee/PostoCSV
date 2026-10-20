@@ -43,7 +43,7 @@ PostoCSV requires Firefox 140 or later. The extension is signed by Mozilla, so i
 
 **Settings** opens the settings page:
 
-- **CSV columns**: one row per column, in order. Type the column title, pick the data it holds, move it with ↑ ↓, remove it with ✕. **Add column** adds one at the end.
+- **CSV columns**: one row per column, in order. Type the column title, pick the data it holds, drag it by its ⠿ handle to reorder (or focus the handle and press ↑ ↓), remove it with ✕. **Add column** adds one at the end.
 - **Delimiter**: comma, semicolon, tab or pipe.
 - **Mastodon instances**: one hostname per line. After saving, click **Grant access to Mastodon hosts** so Firefox allows the extension on them.
 
