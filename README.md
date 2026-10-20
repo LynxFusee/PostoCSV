@@ -41,26 +41,15 @@ PostoCSV requires Firefox 140 or later. The extension is signed by Mozilla, so i
 
 ## Configuration
 
-**Settings** opens a JSON editor. You can import, export, and reset the config there.
+**Settings** opens the settings page:
 
-```json
-{
-  "version": 1,
-  "mastodonHosts": ["mastodon.social"],
-  "csv": {
-    "delimiter": ",",
-    "columns": [
-      { "header": "Platform", "field": "platform" },
-      { "header": "Account", "field": "account" },
-      { "header": "Content", "field": "content" }
-    ]
-  }
-}
-```
+- **CSV columns**: one row per column, in order. Type the column title, pick the data it holds, move it with ↑ ↓, remove it with ✕. **Add column** adds one at the end.
+- **Delimiter**: comma, semicolon, tab or pipe.
+- **Mastodon instances**: one hostname per line. After saving, click **Grant access to Mastodon hosts** so Firefox allows the extension on them.
 
-- `mastodonHosts`: the Mastodon instances to support. After saving, click **Grant access to Mastodon hosts** so Firefox allows the extension on them.
-- `csv.delimiter`: one of `,` `;` `|` or `\t` (tab).
-- `csv.columns`: the columns, in order. `header` is the column title. `field` is one of:
+Click **Save** to apply. **Export file** and **Import file** save and load the settings as JSON, to back them up or share them. **Reset to default** restores the default columns.
+
+The data a column can hold:
 
 | Field | Content |
 |-------|---------|

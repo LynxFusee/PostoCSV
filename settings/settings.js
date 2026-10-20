@@ -1,6 +1,93 @@
-const configText = document.getElementById("configText");
+const columnsBody = document.getElementById("columns");
+const delimiterSelect = document.getElementById("delimiter");
+const hostsText = document.getElementById("hosts");
 const grantBtn = document.getElementById("grantBtn");
 let missingOrigins = [];
+// The columns as edited on the page; saved only when "Save" is clicked.
+let columns = [];
+
+const FIELD_LABELS = {
+  platform: "Platform",
+  postId: "Post ID",
+  account: "Account",
+  accountId: "Account ID",
+  url: "URL",
+  content: "Content",
+  publishedAt: "Published At (UTC)",
+  capturedAt: "Captured At (UTC)",
+  views: "Views",
+  likes: "Likes",
+  replies: "Replies",
+  reposts: "Reposts",
+  imageHashes: "Image Hashes",
+  videoHashes: "Video Hashes"
+};
+
+const DELIMITER_LABELS = { ",": "Comma (,)", ";": "Semicolon (;)", "\t": "Tab", "|": "Pipe (|)" };
+
+function button(text, label, onClick, disabled = false) {
+  const el = document.createElement("button");
+  el.textContent = text;
+  el.setAttribute("aria-label", label);
+  el.disabled = disabled;
+  el.addEventListener("click", onClick);
+  return el;
+}
+
+function moveColumn(from, to) {
+  const [column] = columns.splice(from, 1);
+  columns.splice(to, 0, column);
+  renderColumns();
+}
+
+function renderColumns() {
+  columnsBody.replaceChildren();
+  columns.forEach((column, index) => {
+    const header = document.createElement("input");
+    header.value = column.header;
+    header.setAttribute("aria-label", `Column ${index + 1} title`);
+    header.addEventListener("input", () => (column.header = header.value));
+
+    const field = document.createElement("select");
+    field.setAttribute("aria-label", `Column ${index + 1} data`);
+    for (const name of CONFIG_FIELDS) field.add(new Option(FIELD_LABELS[name] ?? name, name));
+    field.value = column.field;
+    field.addEventListener("change", () => {
+      // A title still matching the old data's name follows the new choice; a custom one is kept.
+      if (column.header === (FIELD_LABELS[column.field] ?? column.field)) {
+        column.header = header.value = FIELD_LABELS[field.value] ?? field.value;
+      }
+      column.field = field.value;
+    });
+
+    const actions = document.createElement("td");
+    actions.className = "row-actions";
+    actions.append(
+      button("↑", `Move column ${index + 1} up`, () => moveColumn(index, index - 1), index === 0),
+      button("↓", `Move column ${index + 1} down`, () => moveColumn(index, index + 1), index === columns.length - 1),
+      button("✕", `Remove column ${index + 1}`, () => {
+        columns.splice(index, 1);
+        renderColumns();
+      })
+    );
+    actions.lastChild.className = "remove";
+
+    const row = document.createElement("tr");
+    for (const input of [header, field]) {
+      const cell = document.createElement("td");
+      cell.append(input);
+      row.append(cell);
+    }
+    row.append(actions);
+    columnsBody.append(row);
+  });
+}
+
+function onAddColumn() {
+  columns.push({ field: "content", header: FIELD_LABELS.content });
+  renderColumns();
+  columnsBody.lastChild.querySelector("select").focus();
+}
 
 function showStatus(message, isError = false) {
   const statusEl = document.getElementById("status");
@@ -19,7 +106,10 @@ async function checkPermissions(config) {
 
 async function refresh() {
   const config = await loadConfig();
-  configText.value = JSON.stringify(config, null, 2);
+  columns = config.csv.columns.map((c) => ({ header: c.header ?? c.field, field: c.field }));
+  renderColumns();
+  delimiterSelect.value = config.csv.delimiter ?? ",";
+  hostsText.value = (config.mastodonHosts ?? []).join("\n");
   await checkPermissions(config);
 }
 
@@ -43,7 +133,10 @@ function parseJson(text) {
 }
 
 async function onSave() {
-  await saveConfig(parseJson(configText.value));
+  await saveConfig({
+    mastodonHosts: hostsText.value.split(/\s+/).filter(Boolean),
+    csv: { delimiter: delimiterSelect.value, columns }
+  });
 }
 
 async function onImport(event) {
@@ -86,7 +179,8 @@ function guard(fn) {
   return (event) => fn(event).catch((e) => showStatus(`Error: ${e.message}`, true));
 }
 
-document.getElementById("fields").textContent = CONFIG_FIELDS.join(", ");
+for (const delimiter of CONFIG_DELIMITERS) delimiterSelect.add(new Option(DELIMITER_LABELS[delimiter], delimiter));
+document.getElementById("addBtn").addEventListener("click", onAddColumn);
 document.getElementById("saveBtn").addEventListener("click", guard(onSave));
 document.getElementById("importFile").addEventListener("change", guard(onImport));
 document.getElementById("exportBtn").addEventListener("click", guard(onExport));
