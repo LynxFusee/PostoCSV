@@ -8,13 +8,15 @@ Open a post, click **Capture**, repeat, then **Export All to CSV**. Each row rec
 
 | Platform | What is read |
 |----------|--------------|
-| X | GraphQL responses for single-post pages |
+| X | GraphQL responses for single-post pages, and the post embedded in the page when it is opened directly |
 | Facebook | GraphQL responses and the data embedded in the first page load |
 | Mastodon | The instance's REST API, on the hosts you list in the settings |
 
 ## How it works
 
 PostoCSV does not scrape the page. While you browse, it reads a copy of the network responses the site already receives (`webRequest.filterResponseData`) and caches every post it recognizes. Clicking **Capture** looks up the post in the active tab from that cache, downloads its media to hash them, and saves the record locally. For Mastodon, if the post was not seen in network traffic, it is fetched from the instance's public API.
+
+X serves two web apps: the older one (seen when logged in) fetches posts from `x.com/i/api/graphql`, the 2026 one (seen when logged out) from `api.x.com/graphql`, and embeds the post in the HTML of a post page opened directly. PostoCSV reads all three.
 
 Responses are passed to the page unchanged: the extension never modifies what the site shows or sends.
 
@@ -24,7 +26,7 @@ PostoCSV requires Firefox 140 or later. The extension is signed by Mozilla, so i
 
 1. Download the latest `.xpi` file from the [Releases](../../releases) page.
 2. Open it in Firefox, either by dragging it into a Firefox window or from `about:addons` → ⚙️ → **Install Add-on From File...**
-3. Accept the permissions Firefox asks for.
+3. Accept the permissions Firefox asks for, including access to X and Facebook. If that access was refused, the popup shows an orange **Allow access to X and Facebook** button: click it, then reload the post page.
 
 **Updates:** PostoCSV is not listed on addons.mozilla.org, so Firefox does not update it automatically. To update, download the new `.xpi` from the Releases page and install it the same way. Your captures and settings are kept.
 
@@ -32,7 +34,7 @@ PostoCSV requires Firefox 140 or later. The extension is signed by Mozilla, so i
 
 ## Usage
 
-1. Open a single post (not a timeline). If the post was already open before the extension was installed, reload the page (F5).
+1. Open a single post (not a timeline). If the post was already open before the extension was installed or granted access, reload the page (F5).
 2. Click the PostoCSV toolbar icon, then **Capture Current Post**.
 3. Repeat for every post you want.
 4. Click **Export All to CSV** and choose where to save the file.
@@ -47,27 +49,29 @@ PostoCSV requires Firefox 140 or later. The extension is signed by Mozilla, so i
 - **Delimiter**: comma, semicolon, tab or pipe.
 - **Mastodon instances**: one hostname per line. After saving, click **Grant access to Mastodon hosts** so Firefox allows the extension on them.
 
+The default columns are Platform, Account, Account ID, Published At (UTC), Content, Captured At (UTC), Views, Likes, Replies, Reposts, Image Hashes, URL and Video Hashes.
+
 Click **Save** to apply. **Export file** and **Import file** save and load the settings as JSON, to back them up or share them. **Reset to default** restores the default columns.
 
-The data a column can hold:
+The data a column can hold (the field name is what an exported settings file uses):
 
-| Field | Content |
-|-------|---------|
-| `platform` | `X`, `Facebook` or `Mastodon` |
-| `postId` | The platform's post ID |
-| `account` | Screen name or display name |
-| `accountId` | The platform's account ID |
-| `url` | Link to the post |
-| `content` | Post text |
-| `publishedAt` | Publication date, UTC, to the minute (`2026-10-19 09:54`) |
-| `capturedAt` | Capture date, UTC, to the minute (`2026-10-19 09:54`) |
-| `views` | View count (X, Facebook videos) |
-| `likes` | Likes / reactions / favourites |
-| `replies` | Reply / comment count |
-| `reposts` | Reposts / shares / boosts |
-| `imageHashes` | SHA-256 of each image, `;`-separated |
-| `videoHashes` | SHA-256 of each video, `;`-separated |
-| `empty` | Nothing: the column stays blank, e.g. to fill in by hand later |
+| In the menu | Field | Content |
+|-------------|-------|---------|
+| Platform | `platform` | `X`, `Facebook` or `Mastodon` |
+| Post ID | `postId` | The platform's post ID |
+| Account | `account` | Screen name or display name |
+| Account ID | `accountId` | The platform's account ID |
+| URL | `url` | Link to the post |
+| Content | `content` | Post text, in full for long X posts |
+| Published At (UTC) | `publishedAt` | Publication date, UTC, to the minute (`2026-10-19 09:54`) |
+| Captured At (UTC) | `capturedAt` | Capture date, UTC, to the minute (`2026-10-19 09:54`) |
+| Views | `views` | View count (X, Facebook videos) |
+| Likes | `likes` | Likes / reactions / favourites |
+| Replies | `replies` | Reply / comment count |
+| Reposts | `reposts` | Reposts / shares / boosts |
+| Image Hashes | `imageHashes` | SHA-256 of each image, `;`-separated |
+| Video Hashes | `videoHashes` | SHA-256 of each video, `;`-separated |
+| Empty column | `empty` | Nothing: the column stays blank, e.g. to fill in by hand later |
 
 A hash is `ERROR` when its file could not be downloaded.
 
@@ -108,6 +112,10 @@ npx web-ext sign --channel=unlisted   # Sign through addons.mozilla.org
 
 `web-ext sign` reads your AMO credentials from the `WEB_EXT_API_KEY` and `WEB_EXT_API_SECRET` environment variables. Never commit them.
 
+### Releases
+
+Work happens on `dev`. Merging `dev` into `main` and pushing `main` runs `.github/workflows/release.yml`: it signs the extension on addons.mozilla.org (unlisted) and publishes the signed `.xpi` as a GitHub release named after the `version` in `manifest.json`. AMO refuses to sign a version twice, so bump `version` before every release. The workflow needs the `WEB_EXT_API_KEY` and `WEB_EXT_API_SECRET` repository secrets.
+
 ### Layout
 
 ```
@@ -122,3 +130,7 @@ settings/            Settings page
 ```
 
 To add a platform, create an object with the same shape as the existing ones (`name`, `matches`, `pageTokens`, `register`, optionally `fetchRecord`), load it in `manifest.json`, and add it to `PLATFORMS` in `background.js`.
+
+## License
+
+[MIT](LICENSE)
