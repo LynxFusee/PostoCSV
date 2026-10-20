@@ -67,6 +67,7 @@ The data a column can hold:
 | `reposts` | Reposts / shares / boosts |
 | `imageHashes` | SHA-256 of each image, `;`-separated |
 | `videoHashes` | SHA-256 of each video, `;`-separated |
+| `empty` | Nothing: the column stays blank, e.g. to fill in by hand later |
 
 A hash is `ERROR` when its file could not be downloaded.
 

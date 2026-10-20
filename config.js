@@ -12,7 +12,9 @@ const CONFIG_FIELDS = [
   "replies",
   "reposts",
   "imageHashes",
-  "videoHashes"
+  "videoHashes",
+  // No post has this field, so its column is always left blank (e.g. for notes added later).
+  "empty"
 ];
 
 const CONFIG_DELIMITERS = [",", ";", "\t", "|"];

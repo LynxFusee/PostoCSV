@@ -20,7 +20,8 @@ const FIELD_LABELS = {
   replies: "Replies",
   reposts: "Reposts",
   imageHashes: "Image Hashes",
-  videoHashes: "Video Hashes"
+  videoHashes: "Video Hashes",
+  empty: "Empty column"
 };
 
 const DELIMITER_LABELS = { ",": "Comma (,)", ";": "Semicolon (;)", "\t": "Tab", "|": "Pipe (|)" };
