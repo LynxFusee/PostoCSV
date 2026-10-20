@@ -23,6 +23,8 @@
         #resetBtn { background-color: #dc3545; }
         #grantBtn { background-color: #fd7e14; }
         #importFile { display: none; }
+        header { border-bottom: 1px solid #ddd; padding-bottom: 8px; margin-bottom: 8px; }
+        header h2 { margin-bottom: 8px; }
         #status { min-height: 20px; font-size: 14px; }
         .success { color: green; }
         .error { color: red; }
@@ -31,7 +33,17 @@
     </style>
 </head>
 <body>
-    <h2>PostoCSV Settings</h2>
+    <header>
+        <h2>PostoCSV Settings</h2>
+        <div class="actions">
+            <button id="saveBtn">Save</button>
+            <label class="button" for="importFile">Import file</label>
+            <input type="file" id="importFile" accept=".json,application/json">
+            <button id="exportBtn">Export file</button>
+            <button id="resetBtn">Reset to default</button>
+        </div>
+        <div id="status" role="status"></div>
+    </header>
     <h3>CSV columns</h3>
     <table>
         <thead><tr><th></th><th>Column title</th><th>Data</th><th></th></tr></thead>
@@ -44,14 +56,8 @@
     <p>One hostname per line, e.g. <code>mastodon.social</code>.</p>
     <textarea id="hosts" spellcheck="false" aria-label="Mastodon instances"></textarea>
     <div class="actions">
-        <button id="saveBtn">Save</button>
-        <label class="button" for="importFile">Import file</label>
-        <input type="file" id="importFile" accept=".json,application/json">
-        <button id="exportBtn">Export file</button>
-        <button id="resetBtn">Reset to default</button>
         <button id="grantBtn" class="hidden">Grant access to Mastodon hosts</button>
     </div>
-    <div id="status"></div>
     <script src="../config.js"></script>
     <script src="settings.js"></script>
 </body>
