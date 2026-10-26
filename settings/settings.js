@@ -15,6 +15,7 @@ const FIELD_LABELS = {
   url: "URL",
   content: "Content",
   publishedAt: "Published At (UTC)",
+  publishedDate: "Published Date (UTC)",
   capturedAt: "Captured At (UTC)",
   views: "Views",
   likes: "Likes",

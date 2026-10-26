@@ -64,6 +64,7 @@ The data a column can hold (the field name is what an exported settings file use
 | URL | `url` | Link to the post |
 | Content | `content` | Post text, in full for long X posts |
 | Published At (UTC) | `publishedAt` | Publication date, UTC, to the minute (`2026-10-19 09:54`) |
+| Published Date (UTC) | `publishedDate` | Publication date only, UTC, without the time (`2026-10-19`) |
 | Captured At (UTC) | `capturedAt` | Capture date, UTC, to the minute (`2026-10-19 09:54`) |
 | Views | `views` | View count (X, Facebook videos) |
 | Likes | `likes` | Likes / reactions / favourites |

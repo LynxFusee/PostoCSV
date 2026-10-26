@@ -6,6 +6,7 @@ const CONFIG_FIELDS = [
   "url",
   "content",
   "publishedAt",
+  "publishedDate",
   "capturedAt",
   "views",
   "likes",
