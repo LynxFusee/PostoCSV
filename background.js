@@ -124,6 +124,22 @@ function exportValue(post, field) {
   return post[field];
 }
 
+// Rows are stored in capture order. Older captures hold a full ISO date ("2026-10-19T09:54:37.000Z"),
+// so compare on the first 16 characters with the "T" normalized. Posts without a date go last.
+function sortPosts(posts, sort) {
+  if (sort !== "publishedAsc" && sort !== "publishedDesc") return posts;
+  const key = (post) => post.publishedAt?.slice(0, 16).replace("T", " ") ?? null;
+  const direction = sort === "publishedAsc" ? 1 : -1;
+  return [...posts].sort((a, b) => {
+    const ka = key(a);
+    const kb = key(b);
+    if (ka === kb) return 0;
+    if (ka === null) return 1;
+    if (kb === null) return -1;
+    return ka < kb ? -direction : direction;
+  });
+}
+
 async function downloadText(text, filename, type) {
   const blob = new Blob([text], { type });
   const url = URL.createObjectURL(blob);
@@ -139,9 +155,9 @@ async function exportCsv() {
   const { savedPosts = [] } = await browser.storage.local.get("savedPosts");
   if (savedPosts.length === 0) return { ok: false, error: "No data to export." };
 
-  const { columns, delimiter } = (await loadConfig()).csv;
+  const { columns, delimiter, sort } = (await loadConfig()).csv;
   const lines = [columns.map((c) => csvCell(c.header, delimiter)).join(delimiter)];
-  for (const post of savedPosts) {
+  for (const post of sortPosts(savedPosts, sort)) {
     lines.push(columns.map((c) => csvCell(exportValue(post, c.field), delimiter)).join(delimiter));
   }
 

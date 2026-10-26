@@ -19,6 +19,7 @@ const CONFIG_FIELDS = [
 ];
 
 const CONFIG_DELIMITERS = [",", ";", "\t", "|"];
+const CONFIG_SORTS = ["captured", "publishedAsc", "publishedDesc"];
 const HOSTNAME_REGEX = /^[a-z0-9-]+(\.[a-z0-9-]+)*$/i;
 
 async function loadDefaultConfig() {
@@ -50,6 +51,11 @@ function validateConfig(raw) {
     throw new Error(`"csv.delimiter" must be one of: , ; | or \\t (tab).`);
   }
 
+  const sort = csv.sort ?? "captured";
+  if (!CONFIG_SORTS.includes(sort)) {
+    throw new Error(`"csv.sort" must be one of: ${CONFIG_SORTS.join(", ")}.`);
+  }
+
   if (!Array.isArray(csv.columns) || csv.columns.length === 0) {
     throw new Error('"csv.columns" must be a non-empty list.');
   }
@@ -68,7 +74,7 @@ function validateConfig(raw) {
   return {
     version: 1,
     mastodonHosts: [...new Set(hosts.map((h) => h.toLowerCase()))],
-    csv: { delimiter, columns }
+    csv: { delimiter, sort, columns }
   };
 }
 
