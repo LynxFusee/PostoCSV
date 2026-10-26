@@ -48,6 +48,7 @@ PostoCSV requires Firefox 140 or later. The extension is signed by Mozilla, so i
 - **CSV columns**: one row per column, in order. Type the column title, pick the data it holds, drag it by its ⠿ handle to reorder (or focus the handle and press ↑ ↓), remove it with ✕. **Add column** adds one at the end.
 - **Delimiter**: comma, semicolon, tab or pipe.
 - **Sort rows**: capture order (default), or publication date, oldest or newest first. Posts without a publication date go last.
+- **Layout**: one post per row (default), or one post per column. In the column layout each line of the file holds one piece of data, its title in the first cell, then its value for each post, in the sort order from left to right.
 - **Mastodon instances**: one hostname per line. After saving, click **Grant access to Mastodon hosts** so Firefox allows the extension on them.
 
 The default columns are Platform, Account, Account ID, Published At (UTC), Content, Captured At (UTC), Views, Likes, Replies, Reposts, Image Hashes, URL and Video Hashes.

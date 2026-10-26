@@ -155,11 +155,14 @@ async function exportCsv() {
   const { savedPosts = [] } = await browser.storage.local.get("savedPosts");
   if (savedPosts.length === 0) return { ok: false, error: "No data to export." };
 
-  const { columns, delimiter, sort } = (await loadConfig()).csv;
-  const lines = [columns.map((c) => csvCell(c.header, delimiter)).join(delimiter)];
-  for (const post of sortPosts(savedPosts, sort)) {
-    lines.push(columns.map((c) => csvCell(exportValue(post, c.field), delimiter)).join(delimiter));
-  }
+  const { columns, delimiter, sort, layout } = (await loadConfig()).csv;
+  let table = [
+    columns.map((c) => c.header),
+    ...sortPosts(savedPosts, sort).map((post) => columns.map((c) => exportValue(post, c.field)))
+  ];
+  // "columns" layout: one post per column, each line holding one field, its title in the first cell.
+  if (layout === "columns") table = columns.map((_, i) => table.map((row) => row[i]));
+  const lines = table.map((row) => row.map((value) => csvCell(value, delimiter)).join(delimiter));
 
   // The leading BOM makes Excel open the file as UTF-8 (accents, emoji).
   await downloadText(
