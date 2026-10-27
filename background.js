@@ -141,7 +141,7 @@ function sortPosts(posts, sort) {
 }
 
 // "byDate" layout: one column per publication day (UTC), headed by the date, posts of that day stacked
-// in it, each as a block of one line per field, blocks separated by an empty line. The first column
+// in it, each as a block of one line per field, blocks back to back. The first column
 // repeats the field titles. Days follow the sort direction ("captured" keeps them oldest first);
 // within a day, posts keep the sorted order. Posts without a date go to a last "No date" column.
 function byDateTable(posts, columns, sort) {
@@ -161,7 +161,6 @@ function byDateTable(posts, columns, sort) {
   const table = [["", ...keys.map((day) => day ?? "No date")]];
   const depth = Math.max(...groups.map((g) => g.length));
   for (let i = 0; i < depth; i++) {
-    if (i > 0) table.push(new Array(groups.length + 1).fill(""));
     for (const column of columns) {
       table.push([column.header, ...groups.map((g) => (g[i] ? exportValue(g[i], column.field) : ""))]);
     }
