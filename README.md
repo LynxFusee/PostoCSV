@@ -47,6 +47,8 @@ PostoCSV requires Firefox 140 or later. The extension is signed by Mozilla, so i
 
 - **CSV columns**: one row per column, in order. Type the column title, pick the data it holds, drag it by its ⠿ handle to reorder (or focus the handle and press ↑ ↓), remove it with ✕. **Add column** adds one at the end.
 - **Delimiter**: comma, semicolon, tab or pipe.
+- **Sort rows**: capture order (default), or publication date, oldest or newest first. Posts without a publication date go last.
+- **Layout**: one post per row (default), or one post per column. In the column layout each line of the file holds one piece of data, its title in the first cell, then its value for each post, in the sort order from left to right. The **One column per publication date** layout puts one column per day (UTC), headed by the date, and stacks that day's posts in it, one block of lines per post, directly one after the other; the first column repeats the column titles. With a publication date sort, days and the posts within a day follow that direction; with capture order, days run oldest first and a day's posts keep their capture order. Posts without a publication date go to a last **No date** column.
 - **Mastodon instances**: one hostname per line. After saving, click **Grant access to Mastodon hosts** so Firefox allows the extension on them.
 
 The default columns are Platform, Account, Account ID, Published At (UTC), Content, Captured At (UTC), Views, Likes, Replies, Reposts, Image Hashes, URL and Video Hashes.
@@ -64,6 +66,7 @@ The data a column can hold (the field name is what an exported settings file use
 | URL | `url` | Link to the post |
 | Content | `content` | Post text, in full for long X posts |
 | Published At (UTC) | `publishedAt` | Publication date, UTC, to the minute (`2026-10-19 09:54`) |
+| Published Date (UTC) | `publishedDate` | Publication date only, UTC, without the time (`2026-10-19`) |
 | Captured At (UTC) | `capturedAt` | Capture date, UTC, to the minute (`2026-10-19 09:54`) |
 | Views | `views` | View count (X, Facebook videos) |
 | Likes | `likes` | Likes / reactions / favourites |

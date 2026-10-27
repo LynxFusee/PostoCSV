@@ -117,6 +117,57 @@ function csvCell(value, delimiter) {
   return needsQuotes ? `"${text.replace(/"/g, '""')}"` : text;
 }
 
+// Derived at export time, so posts captured before the field existed get it too.
+// Older captures store a full ISO date ("2026-10-19T09:54:37.000Z"); both start with YYYY-MM-DD.
+function exportValue(post, field) {
+  if (field === "publishedDate") return post.publishedAt?.slice(0, 10);
+  return post[field];
+}
+
+// Rows are stored in capture order. Older captures hold a full ISO date ("2026-10-19T09:54:37.000Z"),
+// so compare on the first 16 characters with the "T" normalized. Posts without a date go last.
+function sortPosts(posts, sort) {
+  if (sort !== "publishedAsc" && sort !== "publishedDesc") return posts;
+  const key = (post) => post.publishedAt?.slice(0, 16).replace("T", " ") ?? null;
+  const direction = sort === "publishedAsc" ? 1 : -1;
+  return [...posts].sort((a, b) => {
+    const ka = key(a);
+    const kb = key(b);
+    if (ka === kb) return 0;
+    if (ka === null) return 1;
+    if (kb === null) return -1;
+    return ka < kb ? -direction : direction;
+  });
+}
+
+// "byDate" layout: one column per publication day (UTC), headed by the date, posts of that day stacked
+// in it, each as a block of one line per field, blocks back to back. The first column
+// repeats the field titles. Days follow the sort direction ("captured" keeps them oldest first);
+// within a day, posts keep the sorted order. Posts without a date go to a last "No date" column.
+function byDateTable(posts, columns, sort) {
+  const days = new Map();
+  for (const post of sortPosts(posts, sort)) {
+    const day = post.publishedAt?.slice(0, 10) ?? null;
+    if (!days.has(day)) days.set(day, []);
+    days.get(day).push(post);
+  }
+  const direction = sort === "publishedDesc" ? -1 : 1;
+  const keys = [...days.keys()].sort((a, b) => {
+    if (a === null) return 1;
+    if (b === null) return -1;
+    return a < b ? -direction : a > b ? direction : 0;
+  });
+  const groups = keys.map((day) => days.get(day));
+  const table = [["", ...keys.map((day) => day ?? "No date")]];
+  const depth = Math.max(...groups.map((g) => g.length));
+  for (let i = 0; i < depth; i++) {
+    for (const column of columns) {
+      table.push([column.header, ...groups.map((g) => (g[i] ? exportValue(g[i], column.field) : ""))]);
+    }
+  }
+  return table;
+}
+
 async function downloadText(text, filename, type) {
   const blob = new Blob([text], { type });
   const url = URL.createObjectURL(blob);
@@ -132,11 +183,15 @@ async function exportCsv() {
   const { savedPosts = [] } = await browser.storage.local.get("savedPosts");
   if (savedPosts.length === 0) return { ok: false, error: "No data to export." };
 
-  const { columns, delimiter } = (await loadConfig()).csv;
-  const lines = [columns.map((c) => csvCell(c.header, delimiter)).join(delimiter)];
-  for (const post of savedPosts) {
-    lines.push(columns.map((c) => csvCell(post[c.field], delimiter)).join(delimiter));
-  }
+  const { columns, delimiter, sort, layout } = (await loadConfig()).csv;
+  let table = [
+    columns.map((c) => c.header),
+    ...sortPosts(savedPosts, sort).map((post) => columns.map((c) => exportValue(post, c.field)))
+  ];
+  // "columns" layout: one post per column, each line holding one field, its title in the first cell.
+  if (layout === "columns") table = columns.map((_, i) => table.map((row) => row[i]));
+  if (layout === "byDate") table = byDateTable(savedPosts, columns, sort);
+  const lines = table.map((row) => row.map((value) => csvCell(value, delimiter)).join(delimiter));
 
   // The leading BOM makes Excel open the file as UTF-8 (accents, emoji).
   await downloadText(

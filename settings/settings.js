@@ -1,5 +1,7 @@
 const columnsBody = document.getElementById("columns");
 const delimiterSelect = document.getElementById("delimiter");
+const sortSelect = document.getElementById("sort");
+const layoutSelect = document.getElementById("layout");
 const hostsText = document.getElementById("hosts");
 const grantBtn = document.getElementById("grantBtn");
 let missingOrigins = [];
@@ -15,6 +17,7 @@ const FIELD_LABELS = {
   url: "URL",
   content: "Content",
   publishedAt: "Published At (UTC)",
+  publishedDate: "Published Date (UTC)",
   capturedAt: "Captured At (UTC)",
   views: "Views",
   likes: "Likes",
@@ -23,6 +26,18 @@ const FIELD_LABELS = {
   imageHashes: "Image Hashes",
   videoHashes: "Video Hashes",
   empty: "Empty column"
+};
+
+const SORT_LABELS = {
+  captured: "Capture order",
+  publishedAsc: "Publication date, oldest first",
+  publishedDesc: "Publication date, newest first"
+};
+
+const LAYOUT_LABELS = {
+  rows: "One post per row",
+  columns: "One post per column",
+  byDate: "One column per publication date"
 };
 
 const DELIMITER_LABELS = { ",": "Comma (,)", ";": "Semicolon (;)", "\t": "Tab", "|": "Pipe (|)" };
@@ -149,6 +164,8 @@ async function refresh() {
   columns = config.csv.columns.map((c) => ({ header: c.header ?? c.field, field: c.field }));
   renderColumns();
   delimiterSelect.value = config.csv.delimiter ?? ",";
+  sortSelect.value = config.csv.sort ?? "captured";
+  layoutSelect.value = config.csv.layout ?? "rows";
   hostsText.value = (config.mastodonHosts ?? []).join("\n");
   await checkPermissions(config);
 }
@@ -175,7 +192,7 @@ function parseJson(text) {
 async function onSave() {
   await saveConfig({
     mastodonHosts: hostsText.value.split(/\s+/).filter(Boolean),
-    csv: { delimiter: delimiterSelect.value, columns }
+    csv: { delimiter: delimiterSelect.value, sort: sortSelect.value, layout: layoutSelect.value, columns }
   });
 }
 
@@ -220,6 +237,8 @@ function guard(fn) {
 }
 
 for (const delimiter of CONFIG_DELIMITERS) delimiterSelect.add(new Option(DELIMITER_LABELS[delimiter], delimiter));
+for (const sort of CONFIG_SORTS) sortSelect.add(new Option(SORT_LABELS[sort], sort));
+for (const layout of CONFIG_LAYOUTS) layoutSelect.add(new Option(LAYOUT_LABELS[layout], layout));
 document.getElementById("addBtn").addEventListener("click", onAddColumn);
 document.getElementById("saveBtn").addEventListener("click", guard(onSave));
 document.getElementById("importFile").addEventListener("change", guard(onImport));

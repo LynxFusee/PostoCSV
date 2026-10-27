@@ -3,6 +3,8 @@
   "mastodonHosts": [],
   "csv": {
     "delimiter": ",",
+    "sort": "captured",
+    "layout": "rows",
     "columns": [
       { "header": "Platform", "field": "platform" },
       { "header": "Account", "field": "account" },
