@@ -29,13 +29,16 @@
     "*://*.facebook.com/*",
     "*://*.fbcdn.net/*",
     "*://*.instagram.com/*",
-    "*://*.cdninstagram.com/*"
+    "*://*.cdninstagram.com/*",
+    "*://*.tiktok.com/*",
+    "*://*.tiktokcdn.com/*",
+    "*://*.tiktokcdn-us.com/*"
   ],
   "optional_host_permissions": [
     "*://*/*"
   ],
   "background": {
-    "scripts": ["common.js", "config.js", "platforms/x.js", "platforms/facebook.js", "platforms/instagram.js", "platforms/mastodon.js", "background.js"]
+    "scripts": ["common.js", "config.js", "platforms/x.js", "platforms/facebook.js", "platforms/instagram.js", "platforms/tiktok.js", "platforms/mastodon.js", "background.js"]
   },
   "options_ui": {
     "page": "settings/settings.html",
