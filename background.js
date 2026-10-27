@@ -140,6 +140,35 @@ function sortPosts(posts, sort) {
   });
 }
 
+// "byDate" layout: one column per publication day (UTC), headed by the date, posts of that day stacked
+// in it, each as a block of one line per field, blocks separated by an empty line. The first column
+// repeats the field titles. Days follow the sort direction ("captured" keeps them oldest first);
+// within a day, posts keep the sorted order. Posts without a date go to a last "No date" column.
+function byDateTable(posts, columns, sort) {
+  const days = new Map();
+  for (const post of sortPosts(posts, sort)) {
+    const day = post.publishedAt?.slice(0, 10) ?? null;
+    if (!days.has(day)) days.set(day, []);
+    days.get(day).push(post);
+  }
+  const direction = sort === "publishedDesc" ? -1 : 1;
+  const keys = [...days.keys()].sort((a, b) => {
+    if (a === null) return 1;
+    if (b === null) return -1;
+    return a < b ? -direction : a > b ? direction : 0;
+  });
+  const groups = keys.map((day) => days.get(day));
+  const table = [["", ...keys.map((day) => day ?? "No date")]];
+  const depth = Math.max(...groups.map((g) => g.length));
+  for (let i = 0; i < depth; i++) {
+    if (i > 0) table.push(new Array(groups.length + 1).fill(""));
+    for (const column of columns) {
+      table.push([column.header, ...groups.map((g) => (g[i] ? exportValue(g[i], column.field) : ""))]);
+    }
+  }
+  return table;
+}
+
 async function downloadText(text, filename, type) {
   const blob = new Blob([text], { type });
   const url = URL.createObjectURL(blob);
@@ -162,6 +191,7 @@ async function exportCsv() {
   ];
   // "columns" layout: one post per column, each line holding one field, its title in the first cell.
   if (layout === "columns") table = columns.map((_, i) => table.map((row) => row[i]));
+  if (layout === "byDate") table = byDateTable(savedPosts, columns, sort);
   const lines = table.map((row) => row.map((value) => csvCell(value, delimiter)).join(delimiter));
 
   // The leading BOM makes Excel open the file as UTF-8 (accents, emoji).

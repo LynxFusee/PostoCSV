@@ -34,7 +34,11 @@ const SORT_LABELS = {
   publishedDesc: "Publication date, newest first"
 };
 
-const LAYOUT_LABELS = { rows: "One post per row", columns: "One post per column" };
+const LAYOUT_LABELS = {
+  rows: "One post per row",
+  columns: "One post per column",
+  byDate: "One column per publication date"
+};
 
 const DELIMITER_LABELS = { ",": "Comma (,)", ";": "Semicolon (;)", "\t": "Tab", "|": "Pipe (|)" };
 

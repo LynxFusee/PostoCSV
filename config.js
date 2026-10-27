@@ -20,7 +20,7 @@ const CONFIG_FIELDS = [
 
 const CONFIG_DELIMITERS = [",", ";", "\t", "|"];
 const CONFIG_SORTS = ["captured", "publishedAsc", "publishedDesc"];
-const CONFIG_LAYOUTS = ["rows", "columns"];
+const CONFIG_LAYOUTS = ["rows", "columns", "byDate"];
 const HOSTNAME_REGEX = /^[a-z0-9-]+(\.[a-z0-9-]+)*$/i;
 
 async function loadDefaultConfig() {
