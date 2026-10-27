@@ -2,7 +2,7 @@
 // so clicking "Capture" never needs a new request. Only captured posts go to storage.local.
 const CACHE_PREFIX = "post_";
 const CACHE_LIMIT = 300;
-const PLATFORMS = [MastodonPlatform, XPlatform, FacebookPlatform];
+const PLATFORMS = [MastodonPlatform, XPlatform, FacebookPlatform, InstagramPlatform];
 
 function cacheKey(record) {
   return `${CACHE_PREFIX}${record.platform}_${record.postId}`;

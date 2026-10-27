@@ -10,6 +10,7 @@ Open a post, click **Capture**, repeat, then **Export All to CSV**. Each row rec
 |----------|--------------|
 | X | GraphQL responses for single-post pages, and the post embedded in the page when it is opened directly |
 | Facebook | GraphQL responses and the data embedded in the first page load |
+| Instagram | The post embedded in a post page opened directly, and GraphQL / API responses while browsing (posts, reels, carousels) |
 | Mastodon | The instance's REST API, on the hosts you list in the settings |
 
 ## How it works
@@ -26,7 +27,7 @@ PostoCSV requires Firefox 140 or later. The extension is signed by Mozilla, so i
 
 1. Download the latest `.xpi` file from the [Releases](../../releases) page.
 2. Open it in Firefox, either by dragging it into a Firefox window or from `about:addons` → ⚙️ → **Install Add-on From File...**
-3. Accept the permissions Firefox asks for, including access to X and Facebook. If that access was refused, the popup shows an orange **Allow access to X and Facebook** button: click it, then reload the post page.
+3. Accept the permissions Firefox asks for, including access to X, Facebook and Instagram. If that access was refused, the popup shows an orange **Allow access to X, Facebook and Instagram** button: click it, then reload the post page.
 
 **Updates:** PostoCSV is not listed on addons.mozilla.org, so Firefox does not update it automatically. To update, download the new `.xpi` from the Releases page and install it the same way. Your captures and settings are kept.
 
@@ -59,7 +60,7 @@ The data a column can hold (the field name is what an exported settings file use
 
 | In the menu | Field | Content |
 |-------------|-------|---------|
-| Platform | `platform` | `X`, `Facebook` or `Mastodon` |
+| Platform | `platform` | `X`, `Facebook`, `Instagram` or `Mastodon` |
 | Post ID | `postId` | The platform's post ID |
 | Account | `account` | Screen name or display name |
 | Account ID | `accountId` | The platform's account ID |
@@ -68,7 +69,7 @@ The data a column can hold (the field name is what an exported settings file use
 | Published At (UTC) | `publishedAt` | Publication date, UTC, to the minute (`2026-10-19 09:54`) |
 | Published Date (UTC) | `publishedDate` | Publication date only, UTC, without the time (`2026-10-19`) |
 | Captured At (UTC) | `capturedAt` | Capture date, UTC, to the minute (`2026-10-19 09:54`) |
-| Views | `views` | View count (X, Facebook videos) |
+| Views | `views` | View count (X, Facebook videos, Instagram reels) |
 | Likes | `likes` | Likes / reactions / favourites |
 | Replies | `replies` | Reply / comment count |
 | Reposts | `reposts` | Reposts / shares / boosts |
@@ -92,12 +93,12 @@ Everything stays in your browser. Cached posts are kept in session storage and c
 | `storage` | Keep the cache, the captures and the settings |
 | `downloads` | Save the CSV file |
 | `tabs` | Read the URL of the active tab |
-| Host access to X, Facebook and their media servers | Read responses and download media to hash |
+| Host access to X, Facebook, Instagram and their media servers | Read responses and download media to hash |
 | Optional access to other sites | Granted per Mastodon instance from the settings page |
 
 ## Limitations
 
-- Firefox can withhold or revoke access to X and Facebook (Manifest V3 host permissions). Every capture then fails with "Data not found"; the popup shows **Allow access to X and Facebook** to grant it again.
+- Firefox can withhold or revoke access to X, Facebook and Instagram (Manifest V3 host permissions). Every capture then fails with "Data not found"; the popup shows **Allow access to X, Facebook and Instagram** to grant it again.
 - Platforms change their internal APIs without notice. A capture that fails with "Data not found" may mean a parser needs updating.
 - Hashing large videos can take a while.
 
@@ -127,7 +128,7 @@ background.js        Cache, capture, hashing, CSV export
 common.js            Response interception and JSON helpers
 config.js            Config loading and validation
 config/              Default config
-platforms/           One parser per platform (x.js, facebook.js, mastodon.js)
+platforms/           One parser per platform (x.js, facebook.js, instagram.js, mastodon.js)
 popup/               Toolbar popup
 settings/            Settings page
 ```
