@@ -10,6 +10,8 @@ Open a post, click **Capture**, repeat, then **Export All to CSV**. Each row rec
 |----------|--------------|
 | X | GraphQL responses for single-post pages, and the post embedded in the page when it is opened directly |
 | Facebook | GraphQL responses and the data embedded in the first page load |
+| Instagram | The post embedded in a post page opened directly, and GraphQL / API responses while browsing (posts, reels, carousels) |
+| TikTok | The video embedded in a video page opened directly, and the API responses while browsing (videos and photo posts) |
 | Mastodon | The instance's REST API, on the hosts you list in the settings |
 
 ## How it works
@@ -26,7 +28,7 @@ PostoCSV requires Firefox 140 or later. The extension is signed by Mozilla, so i
 
 1. Download the latest `.xpi` file from the [Releases](../../releases) page.
 2. Open it in Firefox, either by dragging it into a Firefox window or from `about:addons` → ⚙️ → **Install Add-on From File...**
-3. Accept the permissions Firefox asks for, including access to X and Facebook. If that access was refused, the popup shows an orange **Allow access to X and Facebook** button: click it, then reload the post page.
+3. Accept the permissions Firefox asks for, including access to X, Facebook, Instagram and TikTok. If that access was refused, the popup shows an orange **Allow access to X, Facebook, Instagram and TikTok** button: click it, then reload the post page.
 
 **Updates:** PostoCSV is not listed on addons.mozilla.org, so Firefox does not update it automatically. To update, download the new `.xpi` from the Releases page and install it the same way. Your captures and settings are kept.
 
@@ -59,7 +61,7 @@ The data a column can hold (the field name is what an exported settings file use
 
 | In the menu | Field | Content |
 |-------------|-------|---------|
-| Platform | `platform` | `X`, `Facebook` or `Mastodon` |
+| Platform | `platform` | `X`, `Facebook`, `Instagram`, `TikTok` or `Mastodon` |
 | Post ID | `postId` | The platform's post ID |
 | Account | `account` | Screen name or display name |
 | Account ID | `accountId` | The platform's account ID |
@@ -68,7 +70,7 @@ The data a column can hold (the field name is what an exported settings file use
 | Published At (UTC) | `publishedAt` | Publication date, UTC, to the minute (`2026-10-19 09:54`) |
 | Published Date (UTC) | `publishedDate` | Publication date only, UTC, without the time (`2026-10-19`) |
 | Captured At (UTC) | `capturedAt` | Capture date, UTC, to the minute (`2026-10-19 09:54`) |
-| Views | `views` | View count (X, Facebook videos) |
+| Views | `views` | View count (X, Facebook videos, Instagram reels, TikTok) |
 | Likes | `likes` | Likes / reactions / favourites |
 | Replies | `replies` | Reply / comment count |
 | Reposts | `reposts` | Reposts / shares / boosts |
@@ -82,22 +84,22 @@ A hash is `ERROR` when its file could not be downloaded.
 
 ## Privacy
 
-Everything stays in your browser. Cached posts are kept in session storage and cleared when Firefox closes. Captures and settings are kept in local extension storage until you clear them. The extension sends nothing anywhere. The only requests it makes itself are media downloads for hashing and, for Mastodon, the public API lookup of the open post.
+Everything stays in your browser. Cached posts are kept in session storage and cleared when Firefox closes. Captures and settings are kept in local extension storage until you clear them. The extension sends nothing anywhere. The only requests it makes itself are media downloads for hashing and, for Mastodon, the public API lookup of the open post. Media downloads carry your cookies for that site, as the page itself would; for TikTok, whose video servers require it, the extension also adds a `tiktok.com` Referer to its own downloads, never to the page's requests.
 
 ### Permissions
 
 | Permission | Why |
 |------------|-----|
-| `webRequest`, `webRequestBlocking`, `webRequestFilterResponse` | Read a copy of the platforms' network responses |
+| `webRequest`, `webRequestBlocking`, `webRequestFilterResponse` | Read a copy of the platforms' network responses, and add the Referer TikTok requires to the extension's own media downloads |
 | `storage` | Keep the cache, the captures and the settings |
 | `downloads` | Save the CSV file |
 | `tabs` | Read the URL of the active tab |
-| Host access to X, Facebook and their media servers | Read responses and download media to hash |
+| Host access to X, Facebook, Instagram, TikTok and their media servers | Read responses and download media to hash |
 | Optional access to other sites | Granted per Mastodon instance from the settings page |
 
 ## Limitations
 
-- Firefox can withhold or revoke access to X and Facebook (Manifest V3 host permissions). Every capture then fails with "Data not found"; the popup shows **Allow access to X and Facebook** to grant it again.
+- Firefox can withhold or revoke access to X, Facebook, Instagram and TikTok (Manifest V3 host permissions). Every capture then fails with "Data not found"; the popup shows **Allow access to X, Facebook, Instagram and TikTok** to grant it again.
 - Platforms change their internal APIs without notice. A capture that fails with "Data not found" may mean a parser needs updating.
 - Hashing large videos can take a while.
 
@@ -127,7 +129,7 @@ background.js        Cache, capture, hashing, CSV export
 common.js            Response interception and JSON helpers
 config.js            Config loading and validation
 config/              Default config
-platforms/           One parser per platform (x.js, facebook.js, mastodon.js)
+platforms/           One parser per platform (x.js, facebook.js, instagram.js, tiktok.js, mastodon.js)
 popup/               Toolbar popup
 settings/            Settings page
 ```

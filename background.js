@@ -2,7 +2,7 @@
 // so clicking "Capture" never needs a new request. Only captured posts go to storage.local.
 const CACHE_PREFIX = "post_";
 const CACHE_LIMIT = 300;
-const PLATFORMS = [MastodonPlatform, XPlatform, FacebookPlatform];
+const PLATFORMS = [MastodonPlatform, XPlatform, FacebookPlatform, InstagramPlatform, TikTokPlatform];
 
 function cacheKey(record) {
   return `${CACHE_PREFIX}${record.platform}_${record.postId}`;
@@ -65,7 +65,8 @@ async function findRecord(platform, tokens) {
 
 async function hashUrl(url) {
   try {
-    const response = await fetch(url);
+    // Some media servers (TikTok) only serve a file along with the site's cookies.
+    const response = await fetch(url, { credentials: "include" });
     if (!response.ok) return null;
     const buffer = await response.arrayBuffer();
     const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);

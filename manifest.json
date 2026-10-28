@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "PostoCSV",
-  "version": "1.1",
+  "version": "1.2",
   "browser_specific_settings": {
     "gecko": {
       "id": "postocsv@local",
@@ -27,13 +27,18 @@
     "*://pbs.twimg.com/*",
     "*://video.twimg.com/*",
     "*://*.facebook.com/*",
-    "*://*.fbcdn.net/*"
+    "*://*.fbcdn.net/*",
+    "*://*.instagram.com/*",
+    "*://*.cdninstagram.com/*",
+    "*://*.tiktok.com/*",
+    "*://*.tiktokcdn.com/*",
+    "*://*.tiktokcdn-us.com/*"
   ],
   "optional_host_permissions": [
     "*://*/*"
   ],
   "background": {
-    "scripts": ["common.js", "config.js", "platforms/x.js", "platforms/facebook.js", "platforms/mastodon.js", "background.js"]
+    "scripts": ["common.js", "config.js", "platforms/x.js", "platforms/facebook.js", "platforms/instagram.js", "platforms/tiktok.js", "platforms/mastodon.js", "background.js"]
   },
   "options_ui": {
     "page": "settings/settings.html",
